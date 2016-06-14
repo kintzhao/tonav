@@ -1,16 +1,33 @@
 cmake_minimum_required(VERSION 2.8)
 project(tonav)
-set (tonav_CMAKE_DIR "${tonav_SOURCE_DIR}/cmake")
-set (CMAKE_MODULE_PATH ${tonav_CMAKE_DIR} ${CMAKE_MODULE_PATH})
+#set (tonav_CMAKE_DIR "${tonav_SOURCE_DIR}/cmake")
+#set (CMAKE_MODULE_PATH ${tonav_CMAKE_DIR} ${CMAKE_MODULE_PATH})
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall")
+#set (CMAKE_INSTALL_RPATH /opt/ros/indigo/lib)
+
 
 find_package(catkin REQUIRED
              COMPONENTS message_generation std_msgs sensor_msgs image_transport)
+find_package(OpenCV REQUIRED)
+message (STATUS "${OpenCV_INCLUDE_DIRS}")
+message (STATUS "${OpenCV_LIBS}")
+
+
+find_package(Eigen3 REQUIRED)
+find_package(Boost REQUIRED COMPONENTS program_options filesystem)
+find_package(image_transport REQUIRED)
+find_package(cv_bridge REQUIRED)
+find_package(tf2_ros REQUIRED)
+include_directories (AFTER "${EIGEN3_INCLUDE_DIR}")
+include_directories (AFTER "${Boost_INCLUDE_DIRS}")
+include_directories (AFTER "${OpenCV_INCLUDE_DIRS}")
+include_directories (AFTER ${image_transport_INCLUDE_DIRS})
+
+
 
 include_directories("${tonav_SOURCE_DIR}/include")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall")
 
-set (CMAKE_INSTALL_RPATH /opt/ros/jade/lib)
 
 set(SOURCE_FILES
         src/main.cpp
@@ -54,36 +71,17 @@ set(SOURCE_FILES
         include/tonav_ros.h
         src/tonav_ros.cpp
 )
-add_executable(tonav ${SOURCE_FILES})
-
-find_package(Eigen3 REQUIRED)
-include_directories (AFTER "${EIGEN3_INCLUDE_DIR}")
-
 
 catkin_package(
     CATKIN_DEPENDS message_runtime std_msgs sensor_msgs tf2 tf2_ros roscpp
     DEPENDS eigen
 )
 
-find_package(Boost REQUIRED COMPONENTS program_options filesystem)
-include_directories (AFTER "${Boost_INCLUDE_DIRS}")
-target_link_libraries(tonav ${Boost_LIBRARIES})
 
-find_package(OpenCV REQUIRED)
-message (STATUS "${OpenCV_INCLUDE_DIRS}")
-message (STATUS "${OpenCV_LIBS}")
-include_directories (AFTER "${OpenCV_INCLUDE_DIRS}")
-target_link_libraries(tonav ${OpenCV_LIBS})
 
-find_package(image_transport REQUIRED)
-include_directories (AFTER ${image_transport_INCLUDE_DIRS})
-target_link_libraries(tonav ${image_transport_LIBRARIES})
+add_executable(tonav ${SOURCE_FILES})
+target_link_libraries(tonav ${Boost_LIBRARIES} ${OpenCV_LIBS} ${image_transport_LIBRARIES} ${cv_bridge_LIBRARIES}  ${tf2_ros_LIBRARIES})
 
-find_package(cv_bridge REQUIRED)
-target_link_libraries(tonav ${cv_bridge_LIBRARIES})
-
-find_package(tf2_ros REQUIRED)
-target_link_libraries(tonav ${tf2_ros_LIBRARIES})
 
 find_package(Doxygen 1.8.6)
 if(DOXYGEN_FOUND)
